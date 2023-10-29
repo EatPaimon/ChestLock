@@ -1,0 +1,5 @@
+name: ChestLock
+version: '${project.version}'
+main: org.eatpaimon.chestlock.ChestLock
+api-version: '1.20'
+authors: [EatPaimon]
