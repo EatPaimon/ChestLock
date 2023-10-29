@@ -9,6 +9,7 @@ public final class ChestLock extends JavaPlugin {
     public void onEnable() {
 
         Bukkit.getPluginManager().registerEvents(new Listener(), this);
+        Bukkit.getLogger().info("[箱子锁]插件已加载");
         // Plugin startup logic
 
     }

@@ -12,6 +12,8 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import java.util.Objects;
+
 public class Listener implements org.bukkit.event.Listener {
 
     @EventHandler
@@ -57,7 +59,7 @@ public class Listener implements org.bukkit.event.Listener {
     @EventHandler
     public void onChestOpen(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (event.getClickedBlock().getType() == Material.CHEST) {
+            if (Objects.requireNonNull(event.getClickedBlock()).getType() == Material.CHEST) {
                 int X = event.getClickedBlock().getX();
                 int Y = event.getClickedBlock().getY();
                 int Z = event.getClickedBlock().getZ();
