@@ -1,5 +1,6 @@
 package org.eatpaimon.chestlock;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -11,38 +12,25 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.Time;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.Timer;
 
 public class Listener implements org.bukkit.event.Listener {
+
+    List<String> opList = (List<String>) ChestLock.main.getConfig().getList("op");
+
 
     @EventHandler
     public void onSignChange(SignChangeEvent event) {
         Material block0 = event.getBlock().getType();
         if (isSign(block0)) {
-            Sign sign = (Sign) event.getBlock().getState();
-            String[] lines = sign.getLines();
-            if (lines[0].equals("已上锁") || lines[0].equals("Locked")) {
-                int X = event.getBlock().getX();
-                int Y = event.getBlock().getY();
-                int Z = event.getBlock().getZ();
-                Location location0 = new Location(event.getBlock().getWorld(), X + 1, Y, Z);
-                Location location1 = new Location(event.getBlock().getWorld(), X - 1, Y, Z);
-                Location location2 = new Location(event.getBlock().getWorld(), X, Y - 1, Z);
-                Location location3 = new Location(event.getBlock().getWorld(), X, Y, Z + 1);
-                Location location4 = new Location(event.getBlock().getWorld(), X, Y, Z - 1);
-                if (location0.getBlock().getType() == Material.CHEST ||
-                        location1.getBlock().getType() == Material.CHEST ||
-                        location2.getBlock().getType() == Material.CHEST ||
-                        location3.getBlock().getType() == Material.CHEST ||
-                        location4.getBlock().getType() == Material.CHEST) {
-                    Player player = event.getPlayer();
-                    lines[1] = player.getName();
-                    event.setLine(1, lines[1]);
-                    sign.setEditable(false);
-                    sign.update();
-                }
-            }
+            timer(event);
         }
     }
 
@@ -73,9 +61,18 @@ public class Listener implements org.bukkit.event.Listener {
                     if (isLocked(location0) || isLocked(location1) || isLocked(location2) ||
                             isLocked(location3) || isLocked(location4)) {
                         String playerName = event.getPlayer().getName();
-                        if (!playerName.equals(lines[1])) {
-                            event.getPlayer().sendMessage("这个箱子被上锁了");
-                            event.setCancelled(true);
+                        if (ChestLock.main.getConfig().getString("OP").equals("false")) {
+                            if (!playerName.equals(lines[1])) {
+                                event.getPlayer().sendMessage("这个箱子被上锁了");
+                                event.setCancelled(true);
+                            }
+                        }else if (opList != null){
+                            for (String s : opList) {
+                                if (!(playerName.equals(lines[1]) || playerName.equals(s))) {
+                                    event.getPlayer().sendMessage("这个箱子被上锁了");
+                                    event.setCancelled(true);
+                                }
+                            }
                         }
                     }
                 }
@@ -103,8 +100,20 @@ public class Listener implements org.bukkit.event.Listener {
                         location2.getBlock().getType() == Material.CHEST ||
                         location3.getBlock().getType() == Material.CHEST ||
                         location4.getBlock().getType() == Material.CHEST) {
-                    event.getPlayer().sendMessage("被上锁，您无法这样做！");
-                    event.setCancelled(true);
+                    String playerName = event.getPlayer().getName();
+                    if (ChestLock.main.getConfig().getString("OP").equals("false")) {
+                        if (!playerName.equals(lines[1])) {
+                            event.getPlayer().sendMessage("被上锁，您无法这样做！");
+                            event.setCancelled(true);
+                        }
+                    }else if (opList != null){
+                        for (String s : opList) {
+                            if (!(playerName.equals(lines[1]) || playerName.equals(s))) {
+                                event.getPlayer().sendMessage("被上锁，您无法这样做！");
+                                event.setCancelled(true);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -177,5 +186,36 @@ public class Listener implements org.bukkit.event.Listener {
             return location4;
         }
         return null;
+    }
+
+    void timer(SignChangeEvent event){
+        Bukkit.getScheduler().runTaskLater(ChestLock.main, new Runnable() {
+            @Override
+            public void run() {
+                Sign sign = (Sign) event.getBlock().getState();
+                String[] lines = sign.getLines();
+                if (lines[0].equals("已上锁") || lines[0].equals("Locked")) {
+                    int X = event.getBlock().getX();
+                    int Y = event.getBlock().getY();
+                    int Z = event.getBlock().getZ();
+                    Location location0 = new Location(event.getBlock().getWorld(), X + 1, Y, Z);
+                    Location location1 = new Location(event.getBlock().getWorld(), X - 1, Y, Z);
+                    Location location2 = new Location(event.getBlock().getWorld(), X, Y - 1, Z);
+                    Location location3 = new Location(event.getBlock().getWorld(), X, Y, Z + 1);
+                    Location location4 = new Location(event.getBlock().getWorld(), X, Y, Z - 1);
+                    if (location0.getBlock().getType() == Material.CHEST ||
+                            location1.getBlock().getType() == Material.CHEST ||
+                            location2.getBlock().getType() == Material.CHEST ||
+                            location3.getBlock().getType() == Material.CHEST ||
+                            location4.getBlock().getType() == Material.CHEST) {
+                        Player player = event.getPlayer();
+                        lines[1] = player.getName();
+                        sign.setLine(1, lines[1]);
+                        sign.setEditable(false);
+                        sign.update();
+                    }
+                }
+            }
+        },10L);
     }
 }
