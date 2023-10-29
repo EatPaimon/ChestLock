@@ -19,19 +19,8 @@ public class Listener implements org.bukkit.event.Listener {
     @EventHandler
     public void onSignChange(SignChangeEvent event) {
         Material block0 = event.getBlock().getType();
-        if (block0 == Material.ACACIA_WALL_SIGN || block0 == Material.SPRUCE_WALL_SIGN ||
-                block0 == Material.BAMBOO_WALL_SIGN || block0 == Material.BIRCH_WALL_SIGN ||
-                block0 == Material.WARPED_WALL_SIGN || block0 == Material.CHERRY_WALL_SIGN ||
-                block0 == Material.CRIMSON_WALL_SIGN || block0 == Material.OAK_WALL_SIGN ||
-                block0 == Material.DARK_OAK_WALL_SIGN || block0 == Material.JUNGLE_WALL_SIGN ||
-                block0 == Material.MANGROVE_WALL_SIGN ||
-                block0 == Material.ACACIA_SIGN || block0 == Material.SPRUCE_SIGN ||
-                block0 == Material.BAMBOO_SIGN || block0 == Material.BIRCH_SIGN ||
-                block0 == Material.WARPED_SIGN || block0 == Material.CHERRY_SIGN ||
-                block0 == Material.CRIMSON_SIGN || block0 == Material.OAK_SIGN ||
-                block0 == Material.DARK_OAK_SIGN || block0 == Material.JUNGLE_SIGN ||
-                block0 == Material.MANGROVE_SIGN) {
-            Sign sign = (Sign) event.getBlock();
+        if (isSign(block0)) {
+            Sign sign = (Sign) event.getBlock().getState();
             String[] lines = sign.getLines();
             if (lines[0].equals("已上锁") || lines[0].equals("Locked")) {
                 int X = event.getBlock().getX();
@@ -51,6 +40,7 @@ public class Listener implements org.bukkit.event.Listener {
                     lines[1] = player.getName();
                     event.setLine(1, lines[1]);
                     sign.setEditable(false);
+                    sign.update();
                 }
             }
         }
@@ -97,7 +87,7 @@ public class Listener implements org.bukkit.event.Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Material block0 = event.getBlock().getType();
         if (isSign(block0)) {
-            Sign sign = (Sign) event.getBlock();
+            Sign sign = (Sign) event.getBlock().getState();
             String[] lines = sign.getLines();
             if (lines[0].equals("已上锁") || lines[0].equals("Locked")) {
                 int X = event.getBlock().getX();
@@ -156,7 +146,7 @@ public class Listener implements org.bukkit.event.Listener {
 
     boolean isLocked(Location location) {
         if (isSign(location.getBlock().getType())) {
-            Sign sign = (Sign) location.getBlock();
+            Sign sign = (Sign) location.getBlock().getState();
             String[] lines = sign.getLines();
             return lines[0].equals("已上锁") || lines[0].equals("Locked");
         }else {
